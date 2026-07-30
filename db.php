@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $host   = "localhost";
 $user   = "root";
 $pass   = "";
-$dbname = "prammy"; // YOUR ACTUAL DATABASE NAME
+$dbname = "primary_school_db"; // YOUR ACTUAL DATABASE NAME
 
 // MySQLi connection (Security/Auth system)
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
