@@ -11,6 +11,9 @@ create a database you can put any names in this I choose in this system name: 'p
 and then import or paste in mysql:
 empty_database.sql 
 
+to register system use 
+username:yourname (without space)
+password: Aa093456789@ (you can put any password but follow protocol)
 
 you can use on real server I recommend infinityfree.com process the same
 
