@@ -7,7 +7,7 @@ install xampp start server apache and mysql
 
 you just go to localhost/phpmyadmin
 
-create a database in this I choose in this system: 'primary_school_db'
+create a database you can put any names in this I choose in this system name: 'primary_school_db'
 and then import or paste in mysql:
 empty_database.sql 
 
