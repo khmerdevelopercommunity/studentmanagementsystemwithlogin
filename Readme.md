@@ -16,7 +16,7 @@ username:yourname (without space)
 password: Aa093456789@ (you can put any password but follow protocol)
 
 to import for data testing I have optional/data_database.sql
-you can choose replace import all in teacher or any other categories
+you can choose 'replace import all' in dashboard
 
 .httaccess for fix https redirect infinityfree.com only
 you can use on real server I recommend infinityfree.com process the same

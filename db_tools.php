@@ -72,7 +72,6 @@ if ($action === 'replace_import' && isset($_FILES['sql_file'])) {
             $existingTables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
             
             // System tables to ALWAYS preserve (login, registration, security)
-            // These tables are NEVER touched during replace import
             $systemTables = [];
             if (in_array('users', $existingTables)) {
                 $systemTables[] = 'users';
@@ -117,6 +116,87 @@ if ($action === 'replace_import' && isset($_FILES['sql_file'])) {
             $referer = $_SERVER['HTTP_REFERER'] ?? 'index.php';
             header("Location: {$referer}?msg=replace_import_error&error=" . urlencode($e->getMessage()));
         }
+        exit;
+    }
+}
+
+// ============================================================================
+// 3. DELETE ALL DATA - Clears all school data (preserves users & audit_logs)
+// ============================================================================
+if ($action === 'delete_all_data') {
+    // Verify CSRF token
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Security token validation failed.");
+    }
+    
+    // Verify password
+    $password = $_POST['password'] ?? '';
+    $userId = $_SESSION['user_id'] ?? 0;
+    
+    // Get user's password hash from database
+    $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Verify password
+    if (!$user || !password_verify($password, $user['password'])) {
+        $_SESSION['delete_error'] = 'Incorrect password. Please try again.';
+        header("Location: index.php#delete-section");
+        exit;
+    }
+    
+    try {
+        // Disable foreign key checks
+        $pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
+        
+        // Get all tables that exist
+        $existingTables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+        
+        // System tables to preserve
+        $systemTables = [];
+        if (in_array('users', $existingTables)) {
+            $systemTables[] = 'users';
+        }
+        if (in_array('audit_logs', $existingTables)) {
+            $systemTables[] = 'audit_logs';
+        }
+        
+        // Tables to delete (ALL tables EXCEPT system tables)
+        $tablesToDelete = array_diff($existingTables, $systemTables);
+        
+        // Delete in reverse order to avoid foreign key issues
+        foreach (array_reverse($tablesToDelete) as $tbl) {
+            try {
+                $pdo->exec("TRUNCATE TABLE `$tbl`;");
+                // Reset auto-increment
+                $pdo->exec("ALTER TABLE `$tbl` AUTO_INCREMENT = 1;");
+            } catch (PDOException $e) {
+                // Skip if table can't be truncated
+                continue;
+            }
+        }
+        
+        // Log the action
+        log_system_event($conn, $_SESSION['username'] ?? 'UNKNOWN', 'ALL_SCHOOL_DATA_DELETED');
+        
+        // Re-enable foreign key checks
+        $pdo->exec("SET FOREIGN_KEY_CHECKS=1;");
+        
+        $_SESSION['delete_success'] = 'All school data has been deleted successfully!';
+        header("Location: index.php#delete-section");
+        exit;
+        
+    } catch (Exception $e) {
+        try {
+            $pdo->exec("SET FOREIGN_KEY_CHECKS=1;");
+        } catch (Exception $inner) {
+            // Ignore
+        }
+        $_SESSION['delete_error'] = 'Delete failed: ' . $e->getMessage();
+        header("Location: index.php#delete-section");
         exit;
     }
 }
