@@ -11,6 +11,10 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
+-- ========================================================
+-- SCHOOL MANAGEMENT TABLES (NO users OR audit_logs)
+-- ========================================================
+
 -- --------------------------------------------------------
 -- Table structure for table `teachers`
 -- --------------------------------------------------------
@@ -27,7 +31,9 @@ CREATE TABLE IF NOT EXISTS `teachers` (
 
 -- Dumping 1 Teacher
 INSERT INTO `teachers` (`teacher_id`, `first_name`, `last_name`, `email`, `phone`, `hire_date`) VALUES
-(1, 'Sarah', 'Johnson', 's.johnson@school.edu', '0123456789', '2026-07-27');
+(1, 'Sarah', 'Johnson', 'sarah.johnson@school.edu', '+1-555-0101', '2026-07-27'),
+(2, 'Michael', 'Chen', 'michael.chen@school.edu', '+1-555-0102', '2026-07-28'),
+(3, 'Jennifer', 'Williams', 'jennifer.williams@school.edu', '+1-555-0103', '2026-07-29');
 
 -- --------------------------------------------------------
 -- Table structure for table `subjects`
@@ -42,7 +48,12 @@ CREATE TABLE IF NOT EXISTS `subjects` (
 
 -- Dumping 1 Subject
 INSERT INTO `subjects` (`subject_id`, `subject_name`, `description`) VALUES
-(1, 'Mathematics', 'Primary grade mathematics and basic arithmetic.');
+(1, 'Mathematics', 'Primary grade mathematics covering arithmetic, geometry, and basic algebra.'),
+(2, 'English', 'Reading, writing, grammar, and literature for elementary students.'),
+(3, 'Science', 'Basic physical science, biology, and environmental studies.'),
+(4, 'Social Studies', 'History, geography, and community awareness.'),
+(5, 'Physical Education', 'Sports, fitness, and healthy lifestyle education.'),
+(6, 'Arts', 'Visual arts, music, and creative expression.');
 
 -- --------------------------------------------------------
 -- Table structure for table `classes`
@@ -59,9 +70,11 @@ CREATE TABLE IF NOT EXISTS `classes` (
   CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`homeroom_teacher_id`) REFERENCES `teachers` (`teacher_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Class
+-- Dumping 3 Classes
 INSERT INTO `classes` (`class_id`, `grade_level`, `section`, `academic_year`, `homeroom_teacher_id`) VALUES
-(1, 1, 'A', '2026-2027', 1);
+(1, 1, 'A', '2026-2027', 1),
+(2, 2, 'A', '2026-2027', 2),
+(3, 3, 'A', '2026-2027', 3);
 
 -- --------------------------------------------------------
 -- Table structure for table `students`
@@ -82,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `students` (
 -- Dumping 10 Fake Students
 INSERT INTO `students` (`student_id`, `first_name`, `last_name`, `dob`, `gender`, `admission_date`, `medical_notes`, `is_active`) VALUES
 (1, 'Liam', 'Smith', '2019-03-12', 'Male', '2026-07-27', 'None', 1),
-(2, 'Olivia', 'Williams', '2019-05-22', 'Female', '2026-07-27', 'Mild peanut allergy', 1),
+(2, 'Olivia', 'Williams', '2019-05-22', 'Female', '2026-07-27', 'Mild peanut allergy - needs EPI pen', 1),
 (3, 'Noah', 'Brown', '2019-01-10', 'Male', '2026-07-27', 'None', 1),
 (4, 'Emma', 'Jones', '2019-08-14', 'Female', '2026-07-27', 'Wears reading glasses', 1),
 (5, 'Oliver', 'Garcia', '2019-11-03', 'Male', '2026-07-27', 'Asthma inhaler required', 1),
@@ -107,9 +120,18 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`class_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Enrollment (Liam Smith enrolled in Grade 1-A)
+-- Dumping Enrollments for Grade 1-A
 INSERT INTO `enrollments` (`enrollment_id`, `student_id`, `class_id`, `enrollment_date`) VALUES
-(1, 1, 1, '2026-07-27');
+(1, 1, 1, '2026-07-27'),
+(2, 2, 1, '2026-07-27'),
+(3, 3, 1, '2026-07-27'),
+(4, 4, 1, '2026-07-27'),
+(5, 5, 1, '2026-07-27'),
+(6, 6, 2, '2026-07-28'),
+(7, 7, 2, '2026-07-28'),
+(8, 8, 2, '2026-07-28'),
+(9, 9, 3, '2026-07-29'),
+(10, 10, 3, '2026-07-29');
 
 -- --------------------------------------------------------
 -- Table structure for table `guardians`
@@ -125,9 +147,13 @@ CREATE TABLE IF NOT EXISTS `guardians` (
   PRIMARY KEY (`guardian_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Guardian
+-- Dumping Guardians
 INSERT INTO `guardians` (`guardian_id`, `first_name`, `last_name`, `relationship`, `phone`, `email`, `address`) VALUES
-(1, 'Robert', 'Smith', 'Father', '0987654321', 'r.smith@email.com', '123 Main Street, Suite 4B');
+(1, 'Robert', 'Smith', 'Father', '+1-555-0201', 'robert.smith@email.com', '123 Main Street, Suite 4B, New York, NY 10001'),
+(2, 'Maria', 'Williams', 'Mother', '+1-555-0202', 'maria.williams@email.com', '456 Oak Avenue, Los Angeles, CA 90001'),
+(3, 'David', 'Brown', 'Father', '+1-555-0203', 'david.brown@email.com', '789 Pine Road, Chicago, IL 60601'),
+(4, 'Sarah', 'Jones', 'Mother', '+1-555-0204', 'sarah.jones@email.com', '321 Elm Street, Houston, TX 77001'),
+(5, 'Carlos', 'Garcia', 'Father', '+1-555-0205', 'carlos.garcia@email.com', '654 Maple Drive, Phoenix, AZ 85001');
 
 -- --------------------------------------------------------
 -- Table structure for table `student_guardians`
@@ -142,9 +168,18 @@ CREATE TABLE IF NOT EXISTS `student_guardians` (
   CONSTRAINT `student_guardians_ibfk_2` FOREIGN KEY (`guardian_id`) REFERENCES `guardians` (`guardian_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Student-Guardian Association
+-- Dumping Student-Guardian Associations
 INSERT INTO `student_guardians` (`student_id`, `guardian_id`, `is_primary_contact`) VALUES
-(1, 1, 1);
+(1, 1, 1),
+(2, 2, 1),
+(3, 3, 1),
+(4, 4, 1),
+(5, 5, 1),
+(6, 2, 1),
+(7, 3, 1),
+(8, 4, 1),
+(9, 5, 1),
+(10, 1, 1);
 
 -- --------------------------------------------------------
 -- Table structure for table `attendance`
@@ -161,9 +196,13 @@ CREATE TABLE IF NOT EXISTS `attendance` (
   CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`enrollment_id`) REFERENCES `enrollments` (`enrollment_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Attendance Record
+-- Dumping Attendance Records
 INSERT INTO `attendance` (`attendance_id`, `enrollment_id`, `date`, `status`, `remarks`) VALUES
-(1, 1, '2026-07-28', 'Present', 'On time');
+(1, 1, '2026-07-28', 'Present', 'On time'),
+(2, 2, '2026-07-28', 'Present', 'On time'),
+(3, 3, '2026-07-28', 'Late', 'Traffic delay'),
+(4, 4, '2026-07-28', 'Present', 'On time'),
+(5, 5, '2026-07-28', 'Absent', 'Sick - called in');
 
 -- --------------------------------------------------------
 -- Table structure for table `grades`
@@ -184,8 +223,34 @@ CREATE TABLE IF NOT EXISTS `grades` (
   CONSTRAINT `grades_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`subject_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping 1 Grade Record
+-- Dumping Grade Records (Liam Smith - Grade 1-A)
 INSERT INTO `grades` (`grade_id`, `enrollment_id`, `subject_id`, `term`, `score`, `letter_grade`, `teacher_comments`) VALUES
-(1, 1, 1, 'Term 1', 95.50, 'A', 'Excellent performance in math!');
+(1, 1, 1, 'Term 1', 95.50, 'A', 'Excellent performance in mathematics!'),
+(2, 1, 2, 'Term 1', 88.00, 'B+', 'Good reading comprehension skills.'),
+(3, 1, 3, 'Term 1', 92.00, 'A-', 'Shows great interest in science.'),
+(4, 2, 1, 'Term 1', 78.50, 'C+', 'Needs extra practice with multiplication.'),
+(5, 2, 2, 'Term 1', 91.00, 'A-', 'Excellent writing skills.'),
+(6, 3, 1, 'Term 1', 85.00, 'B', 'Good progress this term.'),
+(7, 3, 2, 'Term 1', 87.00, 'B+', 'Strong vocabulary.'),
+(8, 4, 1, 'Term 1', 93.00, 'A', 'Outstanding effort!'),
+(9, 4, 3, 'Term 1', 89.00, 'B+', 'Great participation in class.'),
+(10, 5, 1, 'Term 1', 75.00, 'C', 'Needs to complete homework regularly.');
+
+-- ========================================================
+-- Reset Auto-Increment Counters
+-- ========================================================
+ALTER TABLE `teachers` AUTO_INCREMENT = 4;
+ALTER TABLE `subjects` AUTO_INCREMENT = 7;
+ALTER TABLE `classes` AUTO_INCREMENT = 4;
+ALTER TABLE `students` AUTO_INCREMENT = 11;
+ALTER TABLE `enrollments` AUTO_INCREMENT = 11;
+ALTER TABLE `guardians` AUTO_INCREMENT = 6;
+ALTER TABLE `student_guardians` AUTO_INCREMENT = 1;
+ALTER TABLE `attendance` AUTO_INCREMENT = 6;
+ALTER TABLE `grades` AUTO_INCREMENT = 11;
 
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

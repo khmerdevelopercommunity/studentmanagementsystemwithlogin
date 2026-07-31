@@ -12,6 +12,7 @@ if ($action === 'export_data') {
     header('Content-Type: text/plain');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
 
+    // Get all tables
     $tables = ($table !== 'all') ? [$table] : $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
 
     echo "-- Database Full Backup\n";
@@ -19,26 +20,31 @@ if ($action === 'export_data') {
     echo "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
     foreach ($tables as $tbl) {
-        // Skip system tables for export
+        // Skip system tables (users, audit_logs) during export
         if ($table === 'all' && in_array($tbl, ['users', 'audit_logs'])) {
             continue;
         }
         
-        $rows = $pdo->query("SELECT * FROM `$tbl`")->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $rows = $pdo->query("SELECT * FROM `$tbl`")->fetchAll(PDO::FETCH_ASSOC);
 
-        if (count($rows) > 0) {
-            echo "-- Data for table `$tbl` --\n";
-            foreach ($rows as $row) {
-                $columns = array_keys($row);
-                $escapedValues = array_map(function($val) use ($pdo) {
-                    if ($val === null) return "NULL";
-                    return $pdo->quote($val);
-                }, array_values($row));
+            if (count($rows) > 0) {
+                echo "-- Data for table `$tbl` --\n";
+                foreach ($rows as $row) {
+                    $columns = array_keys($row);
+                    $escapedValues = array_map(function($val) use ($pdo) {
+                        if ($val === null) return "NULL";
+                        return $pdo->quote($val);
+                    }, array_values($row));
 
-                // Use REPLACE INTO to handle duplicates gracefully
-                echo "REPLACE INTO `$tbl` (`" . implode("`, `", $columns) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
+                    // Use REPLACE INTO to handle duplicates gracefully
+                    echo "REPLACE INTO `$tbl` (`" . implode("`, `", $columns) . "`) VALUES (" . implode(", ", $escapedValues) . ");\n";
+                }
+                echo "\n";
             }
-            echo "\n";
+        } catch (PDOException $e) {
+            // Skip tables that don't exist or have issues
+            continue;
         }
     }
 
@@ -47,7 +53,9 @@ if ($action === 'export_data') {
 }
 
 // ============================================================================
-// 2. REPLACE IMPORT - Clears all tables and imports fresh data
+// 2. REPLACE IMPORT - Clears all school tables and imports fresh data
+//     PRESERVES: users, audit_logs (system tables)
+//     REPLACES: All school tables (teachers, students, classes, etc.)
 // ============================================================================
 if ($action === 'replace_import' && isset($_FILES['sql_file'])) {
     $file = $_FILES['sql_file']['tmp_name'];
@@ -57,31 +65,34 @@ if ($action === 'replace_import' && isset($_FILES['sql_file'])) {
         $sql = file_get_contents($file);
 
         try {
-            // Disable foreign key checks
+            // Disable foreign key checks temporarily
             $pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
 
-            // Get all tables
-            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+            // Get all tables that exist in the database
+            $existingTables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
             
-            // Exclude system tables from being truncated (preserve users & audit_logs)
-            $excludeTables = ['users', 'audit_logs'];
+            // System tables to ALWAYS preserve (login, registration, security)
+            // These tables are NEVER touched during replace import
+            $systemTables = [];
+            if (in_array('users', $existingTables)) {
+                $systemTables[] = 'users';
+            }
+            if (in_array('audit_logs', $existingTables)) {
+                $systemTables[] = 'audit_logs';
+            }
             
-            if ($targetTable !== 'all') {
-                // Only truncate the specific table if it exists and is not a system table
-                if (in_array($targetTable, $tables) && !in_array($targetTable, $excludeTables)) {
-                    $pdo->exec("TRUNCATE TABLE `$targetTable`;");
-                    // Reset auto-increment for the specific table
-                    $pdo->exec("ALTER TABLE `$targetTable` AUTO_INCREMENT = 1;");
-                }
-            } else {
-                // Truncate all tables except system tables
-                $tablesToTruncate = array_diff($tables, $excludeTables);
-                
-                // Truncate tables in reverse order to avoid FK issues
-                foreach (array_reverse($tablesToTruncate) as $tbl) {
+            // Tables to truncate (ALL tables EXCEPT system tables)
+            $tablesToTruncate = array_diff($existingTables, $systemTables);
+            
+            // Truncate tables in reverse order to avoid foreign key issues
+            foreach (array_reverse($tablesToTruncate) as $tbl) {
+                try {
                     $pdo->exec("TRUNCATE TABLE `$tbl`;");
-                    // Reset auto-increment for each table
+                    // Reset auto-increment counter for clean IDs
                     $pdo->exec("ALTER TABLE `$tbl` AUTO_INCREMENT = 1;");
+                } catch (PDOException $e) {
+                    // If table doesn't exist or can't be truncated, skip it
+                    continue;
                 }
             }
 
