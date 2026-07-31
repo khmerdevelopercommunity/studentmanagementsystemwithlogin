@@ -32,6 +32,17 @@ require_auth($conn);
     <div style="background: #fed7d7; color: #742a2a; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
         Import failed! Please check your .sql file.
     </div>
+<?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'replace_import_success'): ?>
+    <div style="background: #c6f6d5; color: #22543d; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+        Database replaced and imported successfully!
+    </div>
+<?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'replace_import_error'): ?>
+    <div style="background: #fed7d7; color: #742a2a; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+        Replace import failed! Please check your .sql file.
+        <?php if (isset($_GET['error'])): ?>
+            <br><small>Error: <?= htmlspecialchars($_GET['error']) ?></small>
+        <?php endif; ?>
+    </div>
 <?php endif; ?>
 
 <nav>
@@ -55,6 +66,7 @@ require_auth($conn);
     </div>
 </nav>
 
+<!-- Import Modal -->
 <div id="importModal" class="modal-overlay">
     <div class="modal-box">
         <h3 id="importModalTitle">Import SQL File</h3>
@@ -71,6 +83,32 @@ require_auth($conn);
     </div>
 </div>
 
+<!-- Replace Import Modal -->
+<div id="replaceImportModal" class="modal-overlay">
+    <div class="modal-box" style="border-left: 4px solid #e53e3e;">
+        <h3 id="replaceImportModalTitle" style="color: #e53e3e;">⚠️ Replace Import</h3>
+        <p style="font-size: 12px; color: #718096;">
+            <strong style="color: #e53e3e;">Warning:</strong> This will DELETE ALL existing data in the selected table(s) 
+            and replace it with the data from the <code>.sql</code> file.
+        </p>
+        <p style="font-size: 12px; color: #718096; margin-top: 8px;">
+            Select a <code>.sql</code> file to replace data:
+        </p>
+        <form action="db_tools.php?action=replace_import" method="POST" enctype="multipart/form-data" 
+              onsubmit="return confirm('⚠️ WARNING: This will replace all existing data. Are you sure you want to continue?');">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            <input type="hidden" name="table_target" id="replaceImportTableTarget" value="all">
+            <input type="file" name="sql_file" accept=".sql" required style="margin-bottom: 15px; width: 100%;">
+            <div style="text-align: right;">
+                <button type="button" onclick="closeReplaceImportModal()" class="btn-tool">Cancel</button>
+                <button type="submit" class="btn-tool" style="background-color: #e53e3e; color: white; border-color: #c53030; font-weight: bold;">
+                    Replace All Data
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openImportModal(titleText, targetTable) {
     document.getElementById('importModalTitle').innerText = titleText;
@@ -82,7 +120,27 @@ function closeImportModal() {
     document.getElementById('importModal').style.display = 'none';
 }
 
+function openReplaceImportModal(titleText, targetTable) {
+    document.getElementById('replaceImportModalTitle').innerText = '⚠️ ' + titleText;
+    document.getElementById('replaceImportTableTarget').value = targetTable;
+    document.getElementById('replaceImportModal').style.display = 'flex';
+}
+
+function closeReplaceImportModal() {
+    document.getElementById('replaceImportModal').style.display = 'none';
+}
+
+// Close modals when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
+    const modals = document.querySelectorAll('.modal-overlay');
+    modals.forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    });
+
     const searchInput = document.getElementById('live-search-input');
     const resultsBox = document.getElementById('live-search-results');
 

@@ -72,11 +72,9 @@ include 'header.php';
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
     <h3>Teachers List</h3>
-    <div style="display: flex; gap: 6px;">
-        <a href="db_tools.php?action=export_data&table=teachers" class="btn-tool btn-tool-export">export teacher</a>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
         <a href="db_tools.php?action=export_data&table=all" class="btn-tool btn-tool-export">export all fields</a>
-        <button type="button" class="btn-tool btn-tool-import" onclick="openImportModal('Import Teachers Data', 'teachers')">import teacher</button>
-        <button type="button" class="btn-tool btn-tool-import" onclick="openImportModal('Import All Database Data', 'all')">import all fields</button>
+        <button type="button" class="btn-tool" style="background-color: #e53e3e; color: white; border-color: #c53030;" onclick="openReplaceImportModal('Replace All Database Data', 'all')">⚠️ replace import all</button>
     </div>
 </div>
 

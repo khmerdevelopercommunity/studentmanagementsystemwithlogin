@@ -145,3 +145,16 @@ nav {
     width: 380px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
+
+/* Warning button for replace import */
+.btn-tool-replace {
+    background-color: #e53e3e;
+    color: white;
+    border-color: #c53030;
+    font-weight: bold;
+}
+
+.btn-tool-replace:hover {
+    background-color: #c53030;
+    border-color: #9b2c2c;
+}
