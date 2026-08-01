@@ -40,27 +40,27 @@ include 'header.php';
     </div>
 <?php endif; ?>
 
-<!-- Statistics Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-    <div style="background:#fff; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#38bdf8; font-size:32px;"><?= $total_teachers ?></h3>
-        <p style="margin:5px 0 0 0; color:#64748b; font-size: 14px; font-weight: 600; text-transform: uppercase;">Teachers</p>
+<!-- Statistics Cards - Responsive -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3><?= $total_teachers ?></h3>
+        <p>Teachers</p>
     </div>
-    <div style="background:#fff; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#38bdf8; font-size:32px;"><?= $total_subjects ?></h3>
-        <p style="margin:5px 0 0 0; color:#64748b; font-size: 14px; font-weight: 600; text-transform: uppercase;">Subjects</p>
+    <div class="stat-card">
+        <h3><?= $total_subjects ?></h3>
+        <p>Subjects</p>
     </div>
-    <div style="background:#fff; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#38bdf8; font-size:32px;"><?= $total_classes ?></h3>
-        <p style="margin:5px 0 0 0; color:#64748b; font-size: 14px; font-weight: 600; text-transform: uppercase;">Classes</p>
+    <div class="stat-card">
+        <h3><?= $total_classes ?></h3>
+        <p>Classes</p>
     </div>
-    <div style="background:#fff; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#38bdf8; font-size:32px;"><?= $total_students ?></h3>
-        <p style="margin:5px 0 0 0; color:#64748b; font-size: 14px; font-weight: 600; text-transform: uppercase;">Students</p>
+    <div class="stat-card">
+        <h3><?= $total_students ?></h3>
+        <p>Students</p>
     </div>
-    <div style="background:#fff; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-        <h3 style="margin:0; color:#38bdf8; font-size:32px;"><?= $total_enrolls ?></h3>
-        <p style="margin:5px 0 0 0; color:#64748b; font-size: 14px; font-weight: 600; text-transform: uppercase;">Enrollments</p>
+    <div class="stat-card">
+        <h3><?= $total_enrolls ?></h3>
+        <p>Enrollments</p>
     </div>
 </div>
 

@@ -35,9 +35,9 @@ if (isset($_GET['delete'])) {
 
 // Fetch edit data
 $edit_enrollment = isset($_GET['edit']) ? $pdo->prepare("SELECT * FROM enrollments WHERE enrollment_id = ?") : null;
-if ($edit_enrollment) { 
-    $edit_enrollment->execute([$_GET['edit']]); 
-    $edit_enrollment = $edit_enrollment->fetch(); 
+if ($edit_enrollment) {
+    $edit_enrollment->execute([$_GET['edit']]);
+    $edit_enrollment = $edit_enrollment->fetch();
 }
 
 $students = $pdo->query("SELECT * FROM students ORDER BY first_name ASC")->fetchAll();
@@ -102,29 +102,41 @@ include 'header.php';
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr><th>ID</th><th>Student Name</th><th>Class Assigned</th><th>Academic Year</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-        <?php if (count($enrollments) > 0): ?>
-            <?php foreach ($enrollments as $e): ?>
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student Name</th>
+                <th>Class Assigned</th>
+                <th>Academic Year</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (count($enrollments) > 0): ?>
+                <?php foreach ($enrollments as $e): ?>
+                    <tr>
+                        <td><?= $e['enrollment_id'] ?></td>
+                        <td><?= htmlspecialchars($e['student_name']) ?></td>
+                        <td>Grade <?= $e['grade_level'] ?> - <?= htmlspecialchars($e['section']) ?></td>
+                        <td><?= htmlspecialchars($e['academic_year']) ?></td>
+                        <td>
+                            <a href="enroll.php?edit=<?= $e['enrollment_id'] ?>">Edit</a> |
+                            <a href="enroll.php?delete=<?= $e['enrollment_id'] ?>" class="btn-delete" onclick="return confirm('Are you sure you want to delete this enrollment?')">Delete</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
                 <tr>
-                    <td><?= $e['enrollment_id'] ?></td>
-                    <td><?= htmlspecialchars($e['student_name']) ?></td>
-                    <td>Grade <?= $e['grade_level'] ?> - <?= htmlspecialchars($e['section']) ?></td>
-                    <td><?= htmlspecialchars($e['academic_year']) ?></td>
-                    <td>
-                        <a href="enroll.php?edit=<?= $e['enrollment_id'] ?>">Edit</a> | 
-                        <a href="enroll.php?delete=<?= $e['enrollment_id'] ?>" class="btn-delete" onclick="return confirm('Are you sure you want to delete this enrollment?')">Delete</a>
-                    </td>
+                    <td colspan="5">No enrollments found.</td>
                 </tr>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr><td colspan="5">No enrollments found.</td></tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
 
 </body>
+
 </html>

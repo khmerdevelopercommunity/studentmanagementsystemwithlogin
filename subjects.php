@@ -25,9 +25,9 @@ if (isset($_GET['delete'])) {
 }
 
 $edit_subject = isset($_GET['edit']) ? $pdo->prepare("SELECT * FROM subjects WHERE subject_id = ?") : null;
-if ($edit_subject) { 
-    $edit_subject->execute([$_GET['edit']]); 
-    $edit_subject = $edit_subject->fetch(); 
+if ($edit_subject) {
+    $edit_subject->execute([$_GET['edit']]);
+    $edit_subject = $edit_subject->fetch();
 }
 
 $subjects = $pdo->query("SELECT * FROM subjects ORDER BY subject_id DESC")->fetchAll();
@@ -65,24 +65,33 @@ include 'header.php';
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr><th>ID</th><th>Subject Name</th><th>Description</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-        <?php foreach ($subjects as $sub): ?>
+<div class="table-responsive">
+    <table>
+        <thead>
             <tr>
-                <td><?= $sub['subject_id'] ?></td>
-                <td><?= htmlspecialchars($sub['subject_name']) ?></td>
-                <td><?= htmlspecialchars($sub['description'] ?? 'None') ?></td>
-                <td>
-                    <a href="subjects.php?edit=<?= $sub['subject_id'] ?>">Edit</a> | 
-                    <a href="subjects.php?delete=<?= $sub['subject_id'] ?>" class="btn-delete" onclick="return confirm('Delete this subject?')">Delete</a>
-                </td>
+                <th>ID</th>
+                <th>Subject Name</th>
+                <th>Description</th>
+                <th>Actions</th>
             </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <?php foreach ($subjects as $sub): ?>
+                <tr>
+                    <td><?= $sub['subject_id'] ?></td>
+                    <td><?= htmlspecialchars($sub['subject_name']) ?></td>
+                    <td><?= htmlspecialchars($sub['description'] ?? 'None') ?></td>
+                    <td>
+                        <a href="subjects.php?edit=<?= $sub['subject_id'] ?>">Edit</a> |
+                        <a href="subjects.php?delete=<?= $sub['subject_id'] ?>" class="btn-delete" onclick="return confirm('Delete this subject?')">Delete</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
 
 </body>
+
 </html>

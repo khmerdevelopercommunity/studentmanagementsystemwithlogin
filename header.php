@@ -7,12 +7,96 @@ require_auth($conn);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Primary School Management System</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .operational-bar { background: #1e293b; color: #f8fafc; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; font-size: 14px;}
-        .operational-bar .sign-out-btn { background: #ef4444; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; transition: background 0.2s;}
-        .operational-bar .sign-out-btn:hover { background: #dc2626; }
+        .operational-bar { background: #1e293b; color: #f8fafc; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; font-size: 14px; flex-wrap: wrap; gap: 10px;}
+        .operational-bar .sign-out-btn { background: #ef4444; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; transition: background 0.2s; white-space: nowrap;}
+        .operational-bar .sign-out-btn:hover { background: #dc2626; text-decoration: none; }
+        
+        /* Mobile hamburger menu */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #ecf0f1;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        
+        /* Search container - ensure proper positioning */
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        #live-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: auto;
+            min-width: 280px;
+            max-width: 400px;
+            width: auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Align to right when needed */
+        .search-container.align-right #live-search-results {
+            left: auto;
+            right: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 4px;
+            }
+            .nav-links.open {
+                display: flex;
+            }
+            .nav-links a {
+                padding: 8px 12px;
+                width: 100%;
+                text-align: center;
+            }
+            .header-tools {
+                flex: 1;
+                justify-content: flex-end;
+            }
+            #live-search-results {
+                left: 0;
+                right: 0;
+                min-width: auto;
+                width: 100%;
+                max-width: 100%;
+                border-radius: 0 0 6px 6px;
+            }
+            .search-container.align-right #live-search-results {
+                left: 0;
+                right: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #live-search-results {
+                max-height: 300px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -25,19 +109,19 @@ require_auth($conn);
 <h1>Primary School Management System (Grades 1-6)</h1>
 
 <?php if (isset($_GET['msg']) && $_GET['msg'] === 'import_success'): ?>
-    <div style="background: #c6f6d5; color: #22543d; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <div class="alert alert-success">
         Database imported successfully!
     </div>
 <?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'import_error'): ?>
-    <div style="background: #fed7d7; color: #742a2a; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <div class="alert alert-error">
         Import failed! Please check your .sql file.
     </div>
 <?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'replace_import_success'): ?>
-    <div style="background: #c6f6d5; color: #22543d; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <div class="alert alert-success">
         Database replaced and imported successfully!
     </div>
 <?php elseif (isset($_GET['msg']) && $_GET['msg'] === 'replace_import_error'): ?>
-    <div style="background: #fed7d7; color: #742a2a; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+    <div class="alert alert-error">
         Replace import failed! Please check your .sql file.
         <?php if (isset($_GET['error'])): ?>
             <br><small>Error: <?= htmlspecialchars($_GET['error']) ?></small>
@@ -46,7 +130,8 @@ require_auth($conn);
 <?php endif; ?>
 
 <nav>
-    <div class="nav-links">
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <div class="nav-links" id="navLinks">
         <a href="index.php">Dashboard</a>
         <a href="teachers.php">1. Teachers</a>
         <a href="subjects.php">2. Subjects</a>
@@ -56,7 +141,7 @@ require_auth($conn);
     </div>
 
     <div class="header-tools">
-        <div class="search-container">
+        <div class="search-container" id="searchContainer">
             <form action="search.php" method="GET" class="search-form" style="margin:0; padding:0; background:none; border:none; box-shadow:none;">
                 <input type="text" id="live-search-input" name="q" placeholder="Search..." autocomplete="off" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" required>
                 <button type="submit">Search</button>
@@ -74,8 +159,8 @@ require_auth($conn);
         <form action="db_tools.php?action=import" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="table_target" id="importTableTarget" value="all">
-            <input type="file" name="sql_file" accept=".sql" required style="margin-bottom: 15px; width: 100%;">
-            <div style="text-align: right;">
+            <input type="file" name="sql_file" accept=".sql" required style="margin-bottom: 15px; width: 100%; padding: 8px;">
+            <div style="text-align: right; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
                 <button type="button" onclick="closeImportModal()" class="btn-tool">Cancel</button>
                 <button type="submit" class="btn-tool btn-tool-import">Upload & Import</button>
             </div>
@@ -98,10 +183,10 @@ require_auth($conn);
               onsubmit="return confirm('⚠️ WARNING: This will replace all existing data. Are you sure you want to continue?');">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="table_target" id="replaceImportTableTarget" value="all">
-            <input type="file" name="sql_file" accept=".sql" required style="margin-bottom: 15px; width: 100%;">
-            <div style="text-align: right;">
+            <input type="file" name="sql_file" accept=".sql" required style="margin-bottom: 15px; width: 100%; padding: 8px;">
+            <div style="text-align: right; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
                 <button type="button" onclick="closeReplaceImportModal()" class="btn-tool">Cancel</button>
-                <button type="submit" class="btn-tool" style="background-color: #e53e3e; color: white; border-color: #c53030; font-weight: bold;">
+                <button type="submit" class="btn-tool btn-tool-replace">
                     Replace All Data
                 </button>
             </div>
@@ -110,6 +195,10 @@ require_auth($conn);
 </div>
 
 <script>
+function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('open');
+}
+
 function openImportModal(titleText, targetTable) {
     document.getElementById('importModalTitle').innerText = titleText;
     document.getElementById('importTableTarget').value = targetTable;
@@ -143,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const searchInput = document.getElementById('live-search-input');
     const resultsBox = document.getElementById('live-search-results');
+    const searchContainer = document.getElementById('searchContainer');
 
     if (!searchInput || !resultsBox) return;
 
@@ -151,6 +241,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const regex = new RegExp(`(${query})`, 'gi');
         return text.replace(regex, '<strong>$1</strong>');
     }
+
+    // FIX: Check search position to prevent cutting off
+    function checkSearchPosition() {
+        if (!searchContainer) return;
+        const rect = searchContainer.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        
+        // On mobile, always left-aligned (full width)
+        if (windowWidth <= 768) {
+            searchContainer.classList.remove('align-right');
+        } 
+        // If search is near the right edge, align dropdown to right
+        else if (rect.right > windowWidth - 100) {
+            searchContainer.classList.add('align-right');
+        } 
+        // Otherwise align to left
+        else {
+            searchContainer.classList.remove('align-right');
+        }
+    }
+
+    // Check on load
+    checkSearchPosition();
+
+    // Check on resize
+    window.addEventListener('resize', checkSearchPosition);
 
     searchInput.addEventListener('input', function() {
         const query = this.value.trim();
@@ -200,9 +316,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     resultsBox.innerHTML = html;
                     resultsBox.style.display = 'block';
                 } else {
-                    resultsBox.innerHTML = '<div class="search-item" style="color:#a0aec0;">No matches found</div>';
+                    resultsBox.innerHTML = '<div class="search-no-results">🔍 No matches found</div>';
                     resultsBox.style.display = 'block';
                 }
+                
+                // Re-check position after results appear
+                checkSearchPosition();
             });
     });
 
@@ -211,6 +330,13 @@ document.addEventListener('DOMContentLoaded', function() {
             resultsBox.style.display = 'none';
         }
     });
+});
+
+// Close mobile menu on window resize
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        document.getElementById('navLinks').classList.remove('open');
+    }
 });
 </script>
 <div class="content-wrapper" style="padding: 20px;">

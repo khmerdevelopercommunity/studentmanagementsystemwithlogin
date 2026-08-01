@@ -78,7 +78,8 @@ include 'header.php';
     </div>
 </div>
 
-<table>
+<div class="table-responsive">
+        <table>
     <thead>
         <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr>
     </thead>
@@ -97,6 +98,8 @@ include 'header.php';
         <?php endforeach; ?>
     </tbody>
 </table>
+</div>
+
 
 </body>
 </html>

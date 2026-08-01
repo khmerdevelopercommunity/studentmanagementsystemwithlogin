@@ -28,9 +28,9 @@ if (isset($_GET['delete'])) {
 }
 
 $edit_student = isset($_GET['edit']) ? $pdo->prepare("SELECT * FROM students WHERE student_id = ?") : null;
-if ($edit_student) { 
-    $edit_student->execute([$_GET['edit']]); 
-    $edit_student = $edit_student->fetch(); 
+if ($edit_student) {
+    $edit_student->execute([$_GET['edit']]);
+    $edit_student = $edit_student->fetch();
 }
 
 $students = $pdo->query("SELECT * FROM students ORDER BY student_id DESC")->fetchAll();
@@ -85,26 +85,37 @@ include 'header.php';
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr><th>ID</th><th>Name</th><th>DOB</th><th>Gender</th><th>Medical Notes</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-        <?php foreach ($students as $s): ?>
+<div class="table-responsive">
+    <table>
+        <thead>
             <tr>
-                <td><?= $s['student_id'] ?></td>
-                <td><?= htmlspecialchars($s['first_name'] . ' ' . $s['last_name']) ?></td>
-                <td><?= htmlspecialchars($s['dob']) ?></td>
-                <td><?= htmlspecialchars($s['gender']) ?></td>
-                <td><?= htmlspecialchars($s['medical_notes'] ?? 'None') ?></td>
-                <td>
-                    <a href="students.php?edit=<?= $s['student_id'] ?>">Edit</a> | 
-                    <a href="students.php?delete=<?= $s['student_id'] ?>" class="btn-delete" onclick="return confirm('Delete this student?')">Delete</a>
-                </td>
+                <th>ID</th>
+                <th>Name</th>
+                <th>DOB</th>
+                <th>Gender</th>
+                <th>Medical Notes</th>
+                <th>Actions</th>
             </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <?php foreach ($students as $s): ?>
+                <tr>
+                    <td><?= $s['student_id'] ?></td>
+                    <td><?= htmlspecialchars($s['first_name'] . ' ' . $s['last_name']) ?></td>
+                    <td><?= htmlspecialchars($s['dob']) ?></td>
+                    <td><?= htmlspecialchars($s['gender']) ?></td>
+                    <td><?= htmlspecialchars($s['medical_notes'] ?? 'None') ?></td>
+                    <td>
+                        <a href="students.php?edit=<?= $s['student_id'] ?>">Edit</a> |
+                        <a href="students.php?delete=<?= $s['student_id'] ?>" class="btn-delete" onclick="return confirm('Delete this student?')">Delete</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
 
 </body>
+
 </html>

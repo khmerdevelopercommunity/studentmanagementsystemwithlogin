@@ -27,9 +27,9 @@ if (isset($_GET['delete'])) {
 }
 
 $edit_class = isset($_GET['edit']) ? $pdo->prepare("SELECT * FROM classes WHERE class_id = ?") : null;
-if ($edit_class) { 
-    $edit_class->execute([$_GET['edit']]); 
-    $edit_class = $edit_class->fetch(); 
+if ($edit_class) {
+    $edit_class->execute([$_GET['edit']]);
+    $edit_class = $edit_class->fetch();
 }
 
 $teachers = $pdo->query("SELECT * FROM teachers ORDER BY first_name ASC")->fetchAll();
@@ -51,7 +51,7 @@ include 'header.php';
     <?php if ($edit_class): ?>
         <input type="hidden" name="class_id" value="<?= $edit_class['class_id'] ?>">
     <?php endif; ?>
-    
+
     <p>
         <label>Grade Level:</label>
         <select name="grade_level" required>
@@ -97,26 +97,37 @@ include 'header.php';
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr><th>ID</th><th>Grade</th><th>Section</th><th>Academic Year</th><th>Homeroom Teacher</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-        <?php foreach ($classes as $c): ?>
+<div class="table-responsive">
+    <table>
+        <thead>
             <tr>
-                <td><?= $c['class_id'] ?></td>
-                <td>Grade <?= $c['grade_level'] ?></td>
-                <td><?= htmlspecialchars($c['section']) ?></td>
-                <td><?= htmlspecialchars($c['academic_year']) ?></td>
-                <td><?= htmlspecialchars($c['teacher_name'] ?? 'Unassigned') ?></td>
-                <td>
-                    <a href="classes.php?edit=<?= $c['class_id'] ?>">Edit</a> | 
-                    <a href="classes.php?delete=<?= $c['class_id'] ?>" class="btn-delete" onclick="return confirm('Delete class?')">Delete</a>
-                </td>
+                <th>ID</th>
+                <th>Grade</th>
+                <th>Section</th>
+                <th>Academic Year</th>
+                <th>Homeroom Teacher</th>
+                <th>Actions</th>
             </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <?php foreach ($classes as $c): ?>
+                <tr>
+                    <td><?= $c['class_id'] ?></td>
+                    <td>Grade <?= $c['grade_level'] ?></td>
+                    <td><?= htmlspecialchars($c['section']) ?></td>
+                    <td><?= htmlspecialchars($c['academic_year']) ?></td>
+                    <td><?= htmlspecialchars($c['teacher_name'] ?? 'Unassigned') ?></td>
+                    <td>
+                        <a href="classes.php?edit=<?= $c['class_id'] ?>">Edit</a> |
+                        <a href="classes.php?delete=<?= $c['class_id'] ?>" class="btn-delete" onclick="return confirm('Delete class?')">Delete</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
 
 </body>
+
 </html>
