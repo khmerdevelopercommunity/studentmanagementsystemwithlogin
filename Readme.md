@@ -19,6 +19,11 @@ to import for data testing I have optional/data_database.sql
 you can choose 'replace import all' in dashboard
 
 .httaccess for fix https redirect infinityfree.com only
+we have 2 .htaccess to make website not detect as dangerous site or no https:
+
+one we put in htdocs (Parent folder) (I put it in folder htaccess for put inside htdocs folder so you can copy to htdocs on real server)
+one we put inside project folder itself
+
 you can use on real server I recommend infinityfree.com process the same
 
 enjoy!!
